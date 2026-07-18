@@ -88,26 +88,32 @@ def update_date(state):
 
 
 selected_date = dt.datetime(2021, 7, 26)
-
 scenario = None
-df_metrics = None
 data_node = None
 
+
 with tgb.Page() as root_page:
-    tgb.navbar()
+    tgb.toggle(theme=True)
+    with tgb.part(class_name="container"):
+        tgb.navbar()
+        tgb.content()
+
 
 with tgb.Page() as scenario_page:
-    with tgb.layout("1 3 4"):
-        with tgb.part():
+    with tgb.layout("1 1 2"):
+        with tgb.part("card"):
+            tgb.text("**Create scenario**", mode="md")
             tgb.scenario_selector("{scenario}")
-        with tgb.part():
-            tgb.text("## Select Prediction Start Date:", mode="md")
+        with tgb.part("card"):
+            tgb.text("**Select prediction start date**", mode="md")
             tgb.date("{selected_date}", on_change=update_date)
-        with tgb.part():
-            tgb.text("## Scenario", mode="md")
+        with tgb.part("card"):
+            tgb.text("**Submit scenario**", mode="md")
             tgb.scenario("{scenario}", show_properties=False, show_sequences=False)
-    tgb.job_selector(show_submitted_label=False)
-    tgb.scenario_dag("{scenario}")
+    
+    with tgb.part("card"):
+        tgb.text("**Scenario DAG**", mode="md")
+        tgb.scenario_dag("{scenario}")
 
 with tgb.Page() as data_page:
     with tgb.layout("1 5"):
@@ -115,12 +121,14 @@ with tgb.Page() as data_page:
         tgb.data_node("{data_node}", scenario="{scenario}")
 
 pages = {
-    "/": "<|navbar|> <|toggle|theme|> <br/>",
+    "/": root_page,
     "Scenario": scenario_page,
     "Data": data_page,
+    "Jobs": "<|job_selector|show_submitted_label=False|>",
 }
 
 
 if __name__ == "__main__":
+    Config.configure_job_executions(mode="standalone", max_nb_of_workers=2)
     tp.Orchestrator().run()
-    tp.Gui(pages=pages).run(title="Backend Demo", dark_mode=False)
+    tp.Gui(pages=pages).run(title="Backend Demo")
